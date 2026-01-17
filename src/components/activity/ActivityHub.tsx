@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { MagicButton } from '@/components/ui/MagicButton';
 import { XPBadge, StarRating } from '@/components/ui/XPBadge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
+import { GameContainer } from '@/components/games/GameContainer';
+import { getActivitiesForClass, ActivityConfig } from '@/data/gameData';
+import { storage } from '@/lib/storage';
 import { 
   ArrowLeft, BookOpen, Gamepad2, Target, Brain, 
   CheckCircle, Lock, Star, Trophy, Sparkles 
@@ -24,7 +27,6 @@ const activityModes = [
     description: 'Interactive lessons with visuals',
     icon: <BookOpen className="w-6 h-6" />,
     color: 'from-blue-500 to-blue-600',
-    bgColor: 'bg-blue-500/10',
   },
   { 
     id: 'play' as ActivityType, 
@@ -32,7 +34,6 @@ const activityModes = [
     description: 'Fun games to learn concepts',
     icon: <Gamepad2 className="w-6 h-6" />,
     color: 'from-emerald-500 to-emerald-600',
-    bgColor: 'bg-emerald-500/10',
   },
   { 
     id: 'practice' as ActivityType, 
@@ -40,7 +41,6 @@ const activityModes = [
     description: 'Solve problems step by step',
     icon: <Target className="w-6 h-6" />,
     color: 'from-amber-500 to-amber-600',
-    bgColor: 'bg-amber-500/10',
   },
   { 
     id: 'quiz' as ActivityType, 
@@ -48,16 +48,7 @@ const activityModes = [
     description: 'Test your knowledge',
     icon: <Brain className="w-6 h-6" />,
     color: 'from-purple-500 to-purple-600',
-    bgColor: 'bg-purple-500/10',
   },
-];
-
-const sampleLessons = [
-  { id: 1, title: 'Introduction', completed: true, stars: 3, xp: 50 },
-  { id: 2, title: 'Basic Concepts', completed: true, stars: 2, xp: 75 },
-  { id: 3, title: 'Practice Problems', completed: false, stars: 0, xp: 100 },
-  { id: 4, title: 'Advanced Topics', locked: true, stars: 0, xp: 150 },
-  { id: 5, title: 'Final Challenge', locked: true, stars: 0, xp: 200 },
 ];
 
 export const ActivityHub: React.FC<ActivityHubProps> = ({
@@ -67,18 +58,57 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
 }) => {
   const [selectedMode, setSelectedMode] = useState<ActivityType>('learn');
   const [showConfetti, setShowConfetti] = useState(false);
-  
+  const [activeGame, setActiveGame] = useState<ActivityConfig | null>(null);
+  const [playerXP, setPlayerXP] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Load player data
+  useEffect(() => {
+    const profile = storage.getProfile();
+    setPlayerXP(profile.totalXP);
+  }, [refreshKey]);
+
+  const activities = getActivitiesForClass(classNumber, subject);
+  const filteredActivities = activities.filter(a => a.type === selectedMode);
+
   const formatSubjectName = (s: string) => 
     s.charAt(0).toUpperCase() + s.slice(1).replace(/-/g, ' ');
-  
-  const handleLessonClick = (lesson: typeof sampleLessons[0]) => {
-    if (!lesson.locked && !lesson.completed) {
-      // Simulate completing a lesson
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
+
+  const isActivityUnlocked = (activity: ActivityConfig): boolean => {
+    if (!activity.unlockAfter) return true;
+    return storage.isActivityCompleted(classNumber, subject, activity.type, activity.unlockAfter);
+  };
+
+  const getActivityStars = (activity: ActivityConfig): number => {
+    return storage.getActivityStars(classNumber, subject, activity.type, activity.id);
+  };
+
+  const isActivityCompleted = (activity: ActivityConfig): boolean => {
+    return storage.isActivityCompleted(classNumber, subject, activity.type, activity.id);
+  };
+
+  const handleActivityClick = (activity: ActivityConfig) => {
+    if (!isActivityUnlocked(activity)) return;
+    if (activity.questions && activity.questions.length > 0) {
+      setActiveGame(activity);
     }
   };
-  
+
+  const handleGameComplete = (result: any) => {
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
+    setRefreshKey(k => k + 1);
+  };
+
+  const handleCloseGame = () => {
+    setActiveGame(null);
+    setRefreshKey(k => k + 1);
+  };
+
+  // Calculate overall progress
+  const completedCount = activities.filter(a => isActivityCompleted(a)).length;
+  const overallProgress = Math.round((completedCount / activities.length) * 100);
+
   return (
     <section className="min-h-screen py-12 px-6 relative overflow-hidden">
       {/* Background */}
@@ -106,6 +136,17 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
           ))}
         </div>
       )}
+
+      {/* Active Game Modal */}
+      {activeGame && (
+        <GameContainer
+          activity={activeGame}
+          classNumber={classNumber}
+          subjectId={subject}
+          onClose={handleCloseGame}
+          onComplete={handleGameComplete}
+        />
+      )}
       
       <div className="container mx-auto relative z-10">
         {/* Header */}
@@ -125,8 +166,8 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
           </div>
           
           <div className="flex items-center gap-4">
-            <ProgressRing progress={40} size={60} strokeWidth={6} color="magic" />
-            <XPBadge xp={1250} size="lg" />
+            <ProgressRing progress={overallProgress} size={60} strokeWidth={6} color="magic" />
+            <XPBadge xp={playerXP} size="lg" />
           </div>
         </div>
         
@@ -155,7 +196,7 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
           ))}
         </div>
         
-        {/* Lessons List */}
+        {/* Activities List */}
         <div className="grid gap-4">
           <h2 className="text-xl font-bold text-foreground">
             {selectedMode === 'learn' && '📚 Lessons'}
@@ -164,51 +205,68 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
             {selectedMode === 'quiz' && '🧠 Quizzes'}
           </h2>
           
-          {sampleLessons.map((lesson, index) => (
-            <GlassCard
-              key={lesson.id}
-              onClick={() => handleLessonClick(lesson)}
-              className={cn(
-                'p-5 flex items-center gap-4 animate-slide-up',
-                lesson.locked && 'opacity-60 cursor-not-allowed'
-              )}
-              style={{ animationDelay: `${index * 0.1}s` }}
-              tilt={!lesson.locked}
-            >
-              {/* Status indicator */}
-              <div className={cn(
-                'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
-                lesson.completed ? 'bg-emerald-500/20' : lesson.locked ? 'bg-muted' : 'bg-primary/20'
-              )}>
-                {lesson.completed ? (
-                  <CheckCircle className="w-6 h-6 text-emerald-500" />
-                ) : lesson.locked ? (
-                  <Lock className="w-5 h-5 text-muted-foreground" />
-                ) : (
-                  <span className="text-lg font-bold text-primary">{lesson.id}</span>
-                )}
-              </div>
-              
-              {/* Content */}
-              <div className="flex-grow">
-                <h3 className="font-semibold text-foreground">{lesson.title}</h3>
-                <div className="flex items-center gap-4 mt-1">
-                  <StarRating rating={lesson.stars} size="sm" />
-                  <span className="text-xs text-muted-foreground">+{lesson.xp} XP</span>
-                </div>
-              </div>
-              
-              {/* Action button */}
-              {!lesson.locked && (
-                <MagicButton 
-                  variant={lesson.completed ? 'glass' : 'magic'} 
-                  size="sm"
-                >
-                  {lesson.completed ? 'Review' : 'Start'}
-                </MagicButton>
-              )}
+          {filteredActivities.length === 0 ? (
+            <GlassCard className="p-8 text-center" tilt={false}>
+              <p className="text-muted-foreground">No activities available for this mode yet.</p>
             </GlassCard>
-          ))}
+          ) : (
+            filteredActivities.map((activity, index) => {
+              const unlocked = isActivityUnlocked(activity);
+              const completed = isActivityCompleted(activity);
+              const stars = getActivityStars(activity);
+
+              return (
+                <GlassCard
+                  key={activity.id}
+                  onClick={() => handleActivityClick(activity)}
+                  className={cn(
+                    'p-5 flex items-center gap-4 animate-slide-up',
+                    !unlocked && 'opacity-60 cursor-not-allowed'
+                  )}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                  tilt={unlocked}
+                >
+                  {/* Status indicator */}
+                  <div className={cn(
+                    'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
+                    completed ? 'bg-emerald-500/20' : !unlocked ? 'bg-muted' : 'bg-primary/20'
+                  )}>
+                    {completed ? (
+                      <CheckCircle className="w-6 h-6 text-emerald-500" />
+                    ) : !unlocked ? (
+                      <Lock className="w-5 h-5 text-muted-foreground" />
+                    ) : (
+                      <span className="text-lg font-bold text-primary">{activity.id}</span>
+                    )}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-grow">
+                    <h3 className="font-semibold text-foreground">{activity.title}</h3>
+                    <div className="flex items-center gap-4 mt-1">
+                      <StarRating rating={stars} size="sm" />
+                      <span className="text-xs text-muted-foreground">+{activity.xpReward} XP</span>
+                      {activity.timeLimit && (
+                        <span className="text-xs text-muted-foreground">
+                          ⏱️ {Math.floor(activity.timeLimit / 60)}:{(activity.timeLimit % 60).toString().padStart(2, '0')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Action button */}
+                  {unlocked && (
+                    <MagicButton 
+                      variant={completed ? 'glass' : 'magic'} 
+                      size="sm"
+                    >
+                      {completed ? 'Review' : 'Start'}
+                    </MagicButton>
+                  )}
+                </GlassCard>
+              );
+            })
+          )}
         </div>
         
         {/* Achievement teaser */}
@@ -218,11 +276,11 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
           </div>
           <div className="flex-grow">
             <h3 className="text-lg font-bold text-foreground">Next Achievement</h3>
-            <p className="text-sm text-muted-foreground">Complete 3 more lessons to earn "Rising Star" badge!</p>
+            <p className="text-sm text-muted-foreground">Complete {Math.max(0, 3 - completedCount)} more activities to earn "Rising Star" badge!</p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-foreground">2/5</div>
-            <div className="text-xs text-muted-foreground">lessons done</div>
+            <div className="text-2xl font-bold text-foreground">{completedCount}/{activities.length}</div>
+            <div className="text-xs text-muted-foreground">completed</div>
           </div>
         </div>
       </div>
