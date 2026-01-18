@@ -10,6 +10,13 @@ import {
   Play, Pause, RotateCcw, X, Trophy, Sparkles, 
   CheckCircle, XCircle, Clock, Target, Zap
 } from 'lucide-react';
+import { DragDropPuzzle } from './DragDropPuzzle';
+import { MemoryGridGame } from './MemoryGridGame';
+import { 
+  alphabetPuzzles, numberPuzzles, shapePuzzles, colorPuzzles, storyPuzzles,
+  mathMemoryGames, scienceMemoryGames, emojiMemoryGames 
+} from '@/data/puzzleData';
+import { storage } from '@/lib/storage';
 
 interface GameContainerProps {
   activity: ActivityConfig;
@@ -73,6 +80,58 @@ export const GameContainer: React.FC<GameContainerProps> = ({
       setInputAnswer('');
     }
   };
+
+  // Get puzzle/memory game config based on activity
+  const getPuzzleConfig = () => {
+    const allPuzzles = [...alphabetPuzzles, ...numberPuzzles, ...shapePuzzles, ...colorPuzzles, ...storyPuzzles];
+    const puzzleIndex = activity.id - 5; // Puzzles start at id 5
+    return allPuzzles[puzzleIndex] || allPuzzles[0];
+  };
+
+  const getMemoryConfig = () => {
+    const allMemory = [...mathMemoryGames, ...scienceMemoryGames, ...emojiMemoryGames];
+    return subjectId === 'math' ? mathMemoryGames[0] : subjectId === 'science' ? scienceMemoryGames[0] : emojiMemoryGames[0];
+  };
+
+  // Handle special game types
+  if (activity.gameType === 'dragdrop') {
+    const puzzleConfig = getPuzzleConfig();
+    return (
+      <DragDropPuzzle
+        title={puzzleConfig.title}
+        instruction={puzzleConfig.instruction}
+        pieces={puzzleConfig.pieces}
+        slots={puzzleConfig.slots}
+        onComplete={(score, accuracy, timeSpent) => {
+          const stars = accuracy >= 90 ? 3 : accuracy >= 70 ? 2 : accuracy >= 50 ? 1 : 0;
+          const xpEarned = Math.floor(activity.xpReward * (accuracy / 100));
+          storage.completeActivity(classNumber, subjectId, activity.type, activity.id, score, xpEarned, accuracy, stars, timeSpent);
+          storage.addXP(xpEarned);
+          onComplete({ score, accuracy, timeSpent, stars, xpEarned, passed: accuracy >= 50 });
+        }}
+        onClose={onClose}
+      />
+    );
+  }
+
+  if (activity.gameType === 'memory') {
+    const memoryConfig = getMemoryConfig();
+    return (
+      <MemoryGridGame
+        title={memoryConfig.title}
+        cards={memoryConfig.cards}
+        timeLimit={memoryConfig.timeLimit}
+        onComplete={(score, accuracy, timeSpent) => {
+          const stars = accuracy >= 90 ? 3 : accuracy >= 70 ? 2 : accuracy >= 50 ? 1 : 0;
+          const xpEarned = Math.floor(activity.xpReward * (accuracy / 100));
+          storage.completeActivity(classNumber, subjectId, activity.type, activity.id, score, xpEarned, accuracy, stars, timeSpent);
+          storage.addXP(xpEarned);
+          onComplete({ score, accuracy, timeSpent, stars, xpEarned, passed: accuracy >= 50 });
+        }}
+        onClose={onClose}
+      />
+    );
+  }
 
   // Render based on game state
   if (gameState === 'idle') {
