@@ -1,3 +1,8 @@
+/**
+ * Activity Hub Component
+ * Shows available games for a subject (Learn mode removed - games only)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { MagicButton } from '@/components/ui/MagicButton';
@@ -7,7 +12,7 @@ import { GameContainer } from '@/components/games/GameContainer';
 import { getActivitiesForClass, ActivityConfig } from '@/data/gameData';
 import { storage } from '@/lib/storage';
 import { 
-  ArrowLeft, BookOpen, Gamepad2, Target, Brain, 
+  ArrowLeft, Gamepad2, Target, Brain, 
   CheckCircle, Lock, Star, Trophy, Sparkles 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -18,16 +23,9 @@ interface ActivityHubProps {
   onBack: () => void;
 }
 
-type ActivityType = 'learn' | 'play' | 'practice' | 'quiz';
+type ActivityType = 'play' | 'practice' | 'quiz';
 
 const activityModes = [
-  { 
-    id: 'learn' as ActivityType, 
-    title: 'Learn', 
-    description: 'Interactive lessons with visuals',
-    icon: <BookOpen className="w-6 h-6" />,
-    color: 'from-blue-500 to-blue-600',
-  },
   { 
     id: 'play' as ActivityType, 
     title: 'Play', 
@@ -56,7 +54,7 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
   subject,
   onBack,
 }) => {
-  const [selectedMode, setSelectedMode] = useState<ActivityType>('learn');
+  const [selectedMode, setSelectedMode] = useState<ActivityType>('play');
   const [showConfetti, setShowConfetti] = useState(false);
   const [activeGame, setActiveGame] = useState<ActivityConfig | null>(null);
   const [playerXP, setPlayerXP] = useState(0);
@@ -89,9 +87,7 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
 
   const handleActivityClick = (activity: ActivityConfig) => {
     if (!isActivityUnlocked(activity)) return;
-    if (activity.questions && activity.questions.length > 0) {
-      setActiveGame(activity);
-    }
+    setActiveGame(activity);
   };
 
   const handleGameComplete = (result: any) => {
@@ -160,7 +156,7 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
                 {formatSubjectName(subject)}
               </h1>
               <p className="text-muted-foreground mt-1">
-                Class {classNumber} • Your Learning Journey
+                Class {classNumber} • Game-Based Learning
               </p>
             </div>
           </div>
@@ -172,7 +168,7 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
         </div>
         
         {/* Activity Mode Selection */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-4 mb-8">
           {activityModes.map((mode) => (
             <GlassCard
               key={mode.id}
@@ -199,7 +195,6 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
         {/* Activities List */}
         <div className="grid gap-4">
           <h2 className="text-xl font-bold text-foreground">
-            {selectedMode === 'learn' && '📚 Lessons'}
             {selectedMode === 'play' && '🎮 Games'}
             {selectedMode === 'practice' && '✏️ Practice Sets'}
             {selectedMode === 'quiz' && '🧠 Quizzes'}
@@ -243,6 +238,7 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
                   {/* Content */}
                   <div className="flex-grow">
                     <h3 className="font-semibold text-foreground">{activity.title}</h3>
+                    <p className="text-sm text-muted-foreground">{activity.description}</p>
                     <div className="flex items-center gap-4 mt-1">
                       <StarRating rating={stars} size="sm" />
                       <span className="text-xs text-muted-foreground">+{activity.xpReward} XP</span>
@@ -260,7 +256,7 @@ export const ActivityHub: React.FC<ActivityHubProps> = ({
                       variant={completed ? 'glass' : 'magic'} 
                       size="sm"
                     >
-                      {completed ? 'Review' : 'Start'}
+                      {completed ? 'Replay' : 'Play'}
                     </MagicButton>
                   )}
                 </GlassCard>

@@ -1,13 +1,19 @@
+/**
+ * Subject Selection Component
+ * Displays available subjects for the selected class (Hindi removed)
+ */
+
 import React from 'react';
 import { SubjectCard } from './SubjectCard';
 import { MagicButton } from '@/components/ui/MagicButton';
 import { XPBadge } from '@/components/ui/XPBadge';
-import { ArrowLeft, BookOpen, Calculator, Atom, Globe, Palette, Music, Dumbbell, Languages } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calculator, Atom, Globe, Palette, Music, Dumbbell, BarChart2 } from 'lucide-react';
 
 interface SubjectSelectionProps {
   classNumber: number;
   onSelectSubject: (subject: string) => void;
   onBack: () => void;
+  onViewAnalytics?: () => void;
 }
 
 const getSubjectsForClass = (classNumber: number) => {
@@ -84,19 +90,10 @@ const getSubjectsForClass = (classNumber: number) => {
       progress: 50,
       activities: 10
     },
-    { 
-      id: 'hindi',
-      title: 'Hindi', 
-      description: 'Learn our national language beautifully.',
-      icon: <Languages className="w-6 h-6" />,
-      color: 'bg-gradient-to-br from-teal-500 to-teal-600',
-      progress: 38,
-      activities: 20
-    },
   ];
   
   if (classNumber <= 3) {
-    return [...baseSubjects, ...creativeSubjects, extraSubjects[2]];
+    return [...baseSubjects, ...creativeSubjects];
   } else if (classNumber <= 6) {
     return [...baseSubjects, ...middleSubjects, ...creativeSubjects];
   } else {
@@ -108,6 +105,7 @@ export const SubjectSelection: React.FC<SubjectSelectionProps> = ({
   classNumber,
   onSelectSubject,
   onBack,
+  onViewAnalytics,
 }) => {
   const subjects = getSubjectsForClass(classNumber);
   
@@ -128,12 +126,20 @@ export const SubjectSelection: React.FC<SubjectSelectionProps> = ({
                 Class {classNumber} <span className="text-magic">Subjects</span>
               </h1>
               <p className="text-muted-foreground mt-1">
-                Pick a subject to start learning
+                Pick a subject to start playing games
               </p>
             </div>
           </div>
           
-          <XPBadge xp={1250} size="lg" />
+          <div className="flex items-center gap-3">
+            {onViewAnalytics && (
+              <MagicButton variant="glass" onClick={onViewAnalytics}>
+                <BarChart2 className="w-4 h-4 mr-2" />
+                Analytics
+              </MagicButton>
+            )}
+            <XPBadge xp={1250} size="lg" />
+          </div>
         </div>
         
         {/* Subjects grid */}
