@@ -1,11 +1,18 @@
+/**
+ * Main Index Page
+ * Navigation flow: Landing → Class Selection → Subject Selection → Activity Hub
+ * With Analytics Dashboard access from Subject Selection
+ */
+
 import React, { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { ClassSelection } from '@/components/class-selection/ClassSelection';
 import { SubjectSelection } from '@/components/subject-selection/SubjectSelection';
 import { ActivityHub } from '@/components/activity/ActivityHub';
+import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 
-type View = 'landing' | 'class-selection' | 'subject-selection' | 'activity-hub';
+type View = 'landing' | 'class-selection' | 'subject-selection' | 'activity-hub' | 'analytics';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<View>('landing');
@@ -41,6 +48,14 @@ const Index = () => {
     setCurrentView('subject-selection');
   };
 
+  const handleViewAnalytics = () => {
+    setCurrentView('analytics');
+  };
+
+  const handleBackFromAnalytics = () => {
+    setCurrentView('subject-selection');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header showStats={currentView !== 'landing'} />
@@ -62,6 +77,7 @@ const Index = () => {
             classNumber={selectedClass}
             onSelectSubject={handleSelectSubject}
             onBack={handleBackToClassSelection}
+            onViewAnalytics={handleViewAnalytics}
           />
         )}
         
@@ -70,6 +86,13 @@ const Index = () => {
             classNumber={selectedClass}
             subject={selectedSubject}
             onBack={handleBackToSubjectSelection}
+          />
+        )}
+
+        {currentView === 'analytics' && selectedClass && (
+          <AnalyticsDashboard
+            classNumber={selectedClass}
+            onBack={handleBackFromAnalytics}
           />
         )}
       </main>
