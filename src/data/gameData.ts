@@ -202,7 +202,11 @@ export const getActivitiesForClass = (classNumber: number, subject: string): Act
       { id: 2, title: 'Alphabet Match', description: 'Match letters to pictures', type: 'play', gameType: 'matching', questions: alphabetMatchingQuestions, timeLimit: 120, xpReward: 75, difficulty: 1 },
       { id: 3, title: 'Count & Learn', description: 'Practice counting objects', type: 'practice', gameType: 'counting', questions: numberCountingQuestions, xpReward: 60, difficulty: 1 },
       { id: 4, title: 'Colors & Shapes', description: 'Test your color knowledge', type: 'quiz', gameType: 'quiz', questions: colorShapeQuestions, timeLimit: 180, xpReward: 100, difficulty: 2, unlockAfter: 2 },
-      { id: 5, title: 'Story Time', description: 'Interactive story with questions', type: 'learn', gameType: 'story', xpReward: 80, difficulty: 2, unlockAfter: 3 },
+      { id: 5, title: 'Animal Alphabet Puzzle', description: 'Drag animals to their letters!', type: 'play', gameType: 'dragdrop', xpReward: 80, difficulty: 1 },
+      { id: 6, title: 'Count & Match Puzzle', description: 'Match objects to numbers!', type: 'play', gameType: 'dragdrop', xpReward: 80, difficulty: 1 },
+      { id: 7, title: 'Shape Names Puzzle', description: 'Learn shape names by matching!', type: 'practice', gameType: 'dragdrop', xpReward: 70, difficulty: 1 },
+      { id: 8, title: 'Color Match Puzzle', description: 'Match objects to their colors!', type: 'practice', gameType: 'dragdrop', xpReward: 70, difficulty: 1 },
+      { id: 9, title: 'Daily Routine Story', description: 'Put daily activities in order!', type: 'play', gameType: 'dragdrop', xpReward: 90, difficulty: 2, unlockAfter: 5 },
     ];
   } else if (classNumber <= 6) {
     if (subject === 'math') {
