@@ -1,7 +1,7 @@
 /**
  * Main Index Page
  * Navigation flow: Landing → Class Selection → Subject Selection → Activity Hub
- * With Analytics Dashboard access from Subject Selection
+ * With Analytics Dashboard and Achievements access
  */
 
 import React, { useState } from 'react';
@@ -11,8 +11,10 @@ import { ClassSelection } from '@/components/class-selection/ClassSelection';
 import { SubjectSelection } from '@/components/subject-selection/SubjectSelection';
 import { ActivityHub } from '@/components/activity/ActivityHub';
 import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
+import { AchievementsPage } from '@/components/achievements/AchievementsPage';
+import { AchievementPopup } from '@/components/achievements/AchievementPopup';
 
-type View = 'landing' | 'class-selection' | 'subject-selection' | 'activity-hub' | 'analytics';
+type View = 'landing' | 'class-selection' | 'subject-selection' | 'activity-hub' | 'analytics' | 'achievements';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<View>('landing');
@@ -52,13 +54,33 @@ const Index = () => {
     setCurrentView('analytics');
   };
 
+  const handleViewAchievements = () => {
+    setCurrentView('achievements');
+  };
+
   const handleBackFromAnalytics = () => {
     setCurrentView('subject-selection');
   };
 
+  const handleBackFromAchievements = () => {
+    if (selectedSubject) {
+      setCurrentView('activity-hub');
+    } else if (selectedClass) {
+      setCurrentView('subject-selection');
+    } else {
+      setCurrentView('class-selection');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <Header showStats={currentView !== 'landing'} />
+      {/* Global achievement popup */}
+      <AchievementPopup />
+      
+      <Header 
+        showStats={currentView !== 'landing'} 
+        onAchievementsClick={handleViewAchievements}
+      />
       
       <main className={currentView !== 'landing' ? 'pt-24' : ''}>
         {currentView === 'landing' && (
@@ -94,6 +116,10 @@ const Index = () => {
             classNumber={selectedClass}
             onBack={handleBackFromAnalytics}
           />
+        )}
+
+        {currentView === 'achievements' && (
+          <AchievementsPage onBack={handleBackFromAchievements} />
         )}
       </main>
     </div>
