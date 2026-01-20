@@ -352,39 +352,54 @@ export const getActivitiesForClass = (classNumber: number, subject: string): Act
     ];
   }
 
-  // CLASS 7-8: Advanced games with logic and analysis
+  // CLASS 7-8: Advanced games with logic and analysis - EXPANDED
   if (classNumber <= 8) {
     if (subject === 'math') {
       return [
         { id: 1, title: 'Algebra Practice', description: 'Master algebra basics', type: 'practice', gameType: 'input', questions: algebraQuestions, xpReward: 120, difficulty: 3 },
-        { id: 2, title: 'Logic Puzzles', description: 'Train your brain with patterns', type: 'play', gameType: 'quiz', questions: logicPuzzleQuestions, timeLimit: 300, xpReward: 150, difficulty: 4 },
-        { id: 3, title: 'Geometry Master', description: 'Shapes and measurements', type: 'practice', gameType: 'quiz', questions: geometryQuestions, xpReward: 110, difficulty: 3 },
-        { id: 4, title: 'Memory Grid', description: 'Test your memory skills', type: 'play', gameType: 'memory', xpReward: 100, difficulty: 3 },
-        { id: 5, title: 'Algebra Quiz', description: 'Advanced equation solving', type: 'quiz', gameType: 'quiz', questions: algebraQuestions, timeLimit: 180, xpReward: 180, difficulty: 4, unlockAfter: 1 },
-        { id: 6, title: 'Math Olympiad Prep', description: 'Challenge problems', type: 'quiz', gameType: 'quiz', questions: logicPuzzleQuestions, timeLimit: 240, xpReward: 200, difficulty: 5, unlockAfter: 4 },
+        { id: 2, title: 'Math Race', description: 'Solve equations under time pressure!', type: 'play', gameType: 'mathrace', timeLimit: 180, xpReward: 150, difficulty: 3 },
+        { id: 3, title: 'Logic Puzzles', description: 'Train your brain with patterns', type: 'play', gameType: 'quiz', questions: logicPuzzleQuestions, timeLimit: 300, xpReward: 150, difficulty: 4 },
+        { id: 4, title: 'Geometry Master', description: 'Shapes and measurements', type: 'practice', gameType: 'quiz', questions: geometryQuestions, xpReward: 110, difficulty: 3 },
+        { id: 5, title: 'Memory Grid', description: 'Test your memory skills', type: 'play', gameType: 'memory', xpReward: 100, difficulty: 3 },
+        { id: 6, title: 'Typing Challenge', description: 'Type math terms quickly!', type: 'play', gameType: 'typing', timeLimit: 60, xpReward: 80, difficulty: 2 },
+        { id: 7, title: 'Algebra Quiz', description: 'Advanced equation solving', type: 'quiz', gameType: 'quiz', questions: algebraQuestions, timeLimit: 180, xpReward: 180, difficulty: 4, unlockAfter: 1 },
+        { id: 8, title: 'Math Olympiad Prep', description: 'Challenge problems', type: 'quiz', gameType: 'quiz', questions: logicPuzzleQuestions, timeLimit: 240, xpReward: 200, difficulty: 5, unlockAfter: 6 },
       ];
     }
     if (subject === 'science') {
       return [
         { id: 1, title: 'Biology Basics', description: 'Cell structure and life', type: 'practice', gameType: 'quiz', questions: biologyQuestions, xpReward: 100, difficulty: 3 },
-        { id: 2, title: 'Virtual Lab', description: 'Interactive experiments', type: 'play', gameType: 'quiz', questions: scienceLabelingQuestions, timeLimit: 200, xpReward: 120, difficulty: 3 },
-        { id: 3, title: 'Science Memory', description: 'Scientific term memory game', type: 'play', gameType: 'memory', xpReward: 100, difficulty: 3 },
-        { id: 4, title: 'Biology Quiz', description: 'Test biology knowledge', type: 'quiz', gameType: 'quiz', questions: biologyQuestions, timeLimit: 180, xpReward: 150, difficulty: 4, unlockAfter: 1 },
-        { id: 5, title: 'Science Challenge', description: 'Comprehensive test', type: 'quiz', gameType: 'quiz', questions: [...scienceLabelingQuestions, ...biologyQuestions].slice(0, 10), timeLimit: 200, xpReward: 180, difficulty: 4, unlockAfter: 3 },
+        { id: 2, title: 'Science Lab', description: 'Conduct virtual experiments!', type: 'play', gameType: 'sciencelab', xpReward: 150, difficulty: 3 },
+        { id: 3, title: 'True or False', description: 'Quick science facts!', type: 'play', gameType: 'truefalse', xpReward: 90, difficulty: 2 },
+        { id: 4, title: 'Science Memory', description: 'Match scientific terms', type: 'play', gameType: 'memory', xpReward: 100, difficulty: 3 },
+        { id: 5, title: 'Word Builder', description: 'Spell science terms', type: 'play', gameType: 'wordbuilder', xpReward: 80, difficulty: 2 },
+        { id: 6, title: 'Biology Quiz', description: 'Test biology knowledge', type: 'quiz', gameType: 'quiz', questions: biologyQuestions, timeLimit: 180, xpReward: 150, difficulty: 4, unlockAfter: 1 },
+        { id: 7, title: 'Science Challenge', description: 'Comprehensive test', type: 'quiz', gameType: 'quiz', questions: [...scienceLabelingQuestions, ...biologyQuestions].slice(0, 10), timeLimit: 200, xpReward: 180, difficulty: 4, unlockAfter: 5 },
       ];
     }
     if (subject === 'english') {
       return [
         { id: 1, title: 'Advanced Grammar', description: 'Complex grammar rules', type: 'practice', gameType: 'quiz', questions: grammarQuestions, xpReward: 100, difficulty: 3 },
-        { id: 2, title: 'Literature Quiz', description: 'Test literature knowledge', type: 'quiz', gameType: 'quiz', questions: grammarQuestions, timeLimit: 180, xpReward: 120, difficulty: 3 },
-        { id: 3, title: 'Word Memory', description: 'Advanced vocabulary', type: 'play', gameType: 'memory', xpReward: 90, difficulty: 3 },
-        { id: 4, title: 'Grammar Master', description: 'Master level grammar', type: 'quiz', gameType: 'quiz', questions: grammarQuestions, timeLimit: 150, xpReward: 150, difficulty: 4, unlockAfter: 1 },
+        { id: 2, title: 'Typing Speed', description: 'Type passages quickly!', type: 'play', gameType: 'typing', timeLimit: 60, xpReward: 90, difficulty: 2 },
+        { id: 3, title: 'Word Builder', description: 'Spell vocabulary words', type: 'play', gameType: 'wordbuilder', xpReward: 85, difficulty: 2 },
+        { id: 4, title: 'Literature Quiz', description: 'Test literature knowledge', type: 'quiz', gameType: 'quiz', questions: grammarQuestions, timeLimit: 180, xpReward: 120, difficulty: 3 },
+        { id: 5, title: 'Word Memory', description: 'Advanced vocabulary', type: 'play', gameType: 'memory', xpReward: 90, difficulty: 3 },
+        { id: 6, title: 'Grammar Master', description: 'Master level grammar', type: 'quiz', gameType: 'quiz', questions: grammarQuestions, timeLimit: 150, xpReward: 150, difficulty: 4, unlockAfter: 1 },
+      ];
+    }
+    if (subject === 'social') {
+      return [
+        { id: 1, title: 'Geography Explorer', description: 'Explore the world!', type: 'play', gameType: 'geography', timeLimit: 180, xpReward: 130, difficulty: 3 },
+        { id: 2, title: 'History Timeline', description: 'Important events', type: 'practice', gameType: 'quiz', questions: historyQuestions, xpReward: 100, difficulty: 3 },
+        { id: 3, title: 'True or False', description: 'Geography facts!', type: 'play', gameType: 'truefalse', xpReward: 85, difficulty: 2 },
+        { id: 4, title: 'Map Memory', description: 'Remember locations', type: 'play', gameType: 'memory', xpReward: 90, difficulty: 3 },
+        { id: 5, title: 'Geography Quiz', description: 'Test world knowledge', type: 'quiz', gameType: 'quiz', questions: geographyQuestions, timeLimit: 180, xpReward: 140, difficulty: 4, unlockAfter: 1 },
       ];
     }
     // Default for other subjects
     return [
       { id: 1, title: 'Concept Practice', description: 'Practice key concepts', type: 'practice', gameType: 'quiz', questions: logicPuzzleQuestions, xpReward: 100, difficulty: 3 },
-      { id: 2, title: 'Logic Challenge', description: 'Solve logic puzzles', type: 'play', gameType: 'quiz', questions: logicPuzzleQuestions, timeLimit: 240, xpReward: 130, difficulty: 4 },
+      { id: 2, title: 'Typing Challenge', description: 'Type quickly!', type: 'play', gameType: 'typing', timeLimit: 60, xpReward: 80, difficulty: 2 },
       { id: 3, title: 'Memory Grid', description: 'Test memory skills', type: 'play', gameType: 'memory', xpReward: 90, difficulty: 3 },
       { id: 4, title: 'Subject Quiz', description: 'Comprehensive quiz', type: 'quiz', gameType: 'quiz', questions: logicPuzzleQuestions, timeLimit: 180, xpReward: 150, difficulty: 4, unlockAfter: 1 },
     ];

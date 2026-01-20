@@ -12,11 +12,18 @@ import {
 } from 'lucide-react';
 import { DragDropPuzzle } from './DragDropPuzzle';
 import { MemoryGridGame } from './MemoryGridGame';
+import { TypingGame } from './TypingGame';
+import { WordBuilderGame } from './WordBuilderGame';
+import { TrueFalseGame } from './TrueFalseGame';
+import { MathRaceGame } from './MathRaceGame';
+import { ScienceLabGame } from './ScienceLabGame';
+import { GeographyExplorerGame } from './GeographyExplorerGame';
 import { 
   alphabetPuzzles, numberPuzzles, shapePuzzles, colorPuzzles, storyPuzzles,
   mathMemoryGames, scienceMemoryGames, emojiMemoryGames 
 } from '@/data/puzzleData';
 import { storage } from '@/lib/storage';
+import { achievementManager } from '@/lib/achievementManager';
 
 interface GameContainerProps {
   activity: ActivityConfig;
@@ -25,6 +32,40 @@ interface GameContainerProps {
   onClose: () => void;
   onComplete: (result: any) => void;
 }
+
+// Helper to handle game completion with achievements
+const handleGameComplete = (
+  activity: ActivityConfig,
+  classNumber: number,
+  subjectId: string,
+  score: number,
+  accuracy: number,
+  timeSpent: number,
+  onComplete: (result: any) => void
+) => {
+  const stars = accuracy >= 90 ? 3 : accuracy >= 70 ? 2 : accuracy >= 50 ? 1 : 0;
+  const xpEarned = Math.floor(activity.xpReward * (accuracy / 100));
+  
+  storage.completeActivity(classNumber, subjectId, activity.type, activity.id, score, xpEarned, accuracy, stars, timeSpent);
+  storage.addXP(xpEarned);
+  
+  // Trigger achievement checks
+  const totalXP = storage.getTotalXP();
+  const gamesCompleted = storage.getCompletedActivitiesCount();
+  const subjectsPlayed = storage.getSubjectsPlayed();
+  
+  achievementManager.checkGameCompletion({
+    accuracy,
+    timeSpent,
+    correctAnswers: Math.round((accuracy / 100) * 10),
+    totalXP,
+    streak: Math.floor(accuracy / 20),
+    gamesCompleted,
+    subjectsPlayed,
+  });
+  
+  onComplete({ score, accuracy, timeSpent, stars, xpEarned, passed: accuracy >= 50 });
+};
 
 export const GameContainer: React.FC<GameContainerProps> = ({
   activity,
@@ -84,12 +125,11 @@ export const GameContainer: React.FC<GameContainerProps> = ({
   // Get puzzle/memory game config based on activity
   const getPuzzleConfig = () => {
     const allPuzzles = [...alphabetPuzzles, ...numberPuzzles, ...shapePuzzles, ...colorPuzzles, ...storyPuzzles];
-    const puzzleIndex = activity.id - 5; // Puzzles start at id 5
+    const puzzleIndex = activity.id - 5;
     return allPuzzles[puzzleIndex] || allPuzzles[0];
   };
 
   const getMemoryConfig = () => {
-    const allMemory = [...mathMemoryGames, ...scienceMemoryGames, ...emojiMemoryGames];
     return subjectId === 'math' ? mathMemoryGames[0] : subjectId === 'science' ? scienceMemoryGames[0] : emojiMemoryGames[0];
   };
 
@@ -102,13 +142,7 @@ export const GameContainer: React.FC<GameContainerProps> = ({
         instruction={puzzleConfig.instruction}
         pieces={puzzleConfig.pieces}
         slots={puzzleConfig.slots}
-        onComplete={(score, accuracy, timeSpent) => {
-          const stars = accuracy >= 90 ? 3 : accuracy >= 70 ? 2 : accuracy >= 50 ? 1 : 0;
-          const xpEarned = Math.floor(activity.xpReward * (accuracy / 100));
-          storage.completeActivity(classNumber, subjectId, activity.type, activity.id, score, xpEarned, accuracy, stars, timeSpent);
-          storage.addXP(xpEarned);
-          onComplete({ score, accuracy, timeSpent, stars, xpEarned, passed: accuracy >= 50 });
-        }}
+        onComplete={(score, accuracy, timeSpent) => handleGameComplete(activity, classNumber, subjectId, score, accuracy, timeSpent, onComplete)}
         onClose={onClose}
       />
     );
@@ -121,13 +155,77 @@ export const GameContainer: React.FC<GameContainerProps> = ({
         title={memoryConfig.title}
         cards={memoryConfig.cards}
         timeLimit={memoryConfig.timeLimit}
-        onComplete={(score, accuracy, timeSpent) => {
-          const stars = accuracy >= 90 ? 3 : accuracy >= 70 ? 2 : accuracy >= 50 ? 1 : 0;
-          const xpEarned = Math.floor(activity.xpReward * (accuracy / 100));
-          storage.completeActivity(classNumber, subjectId, activity.type, activity.id, score, xpEarned, accuracy, stars, timeSpent);
-          storage.addXP(xpEarned);
-          onComplete({ score, accuracy, timeSpent, stars, xpEarned, passed: accuracy >= 50 });
-        }}
+        onComplete={(score, accuracy, timeSpent) => handleGameComplete(activity, classNumber, subjectId, score, accuracy, timeSpent, onComplete)}
+        onClose={onClose}
+      />
+    );
+  }
+
+  if (activity.gameType === 'typing') {
+    return (
+      <TypingGame
+        title={activity.title}
+        words={[]}
+        timeLimit={activity.timeLimit || 60}
+        onComplete={(score, accuracy, timeSpent) => handleGameComplete(activity, classNumber, subjectId, score, accuracy, timeSpent, onComplete)}
+        onClose={onClose}
+      />
+    );
+  }
+
+  if (activity.gameType === 'wordbuilder') {
+    return (
+      <WordBuilderGame
+        title={activity.title}
+        words={[]}
+        onComplete={(score, accuracy, timeSpent) => handleGameComplete(activity, classNumber, subjectId, score, accuracy, timeSpent, onComplete)}
+        onClose={onClose}
+      />
+    );
+  }
+
+  if (activity.gameType === 'truefalse') {
+    return (
+      <TrueFalseGame
+        title={activity.title}
+        questions={[]}
+        timePerQuestion={10}
+        onComplete={(score, accuracy, timeSpent) => handleGameComplete(activity, classNumber, subjectId, score, accuracy, timeSpent, onComplete)}
+        onClose={onClose}
+      />
+    );
+  }
+
+  if (activity.gameType === 'mathrace') {
+    return (
+      <MathRaceGame
+        title={activity.title}
+        classNumber={classNumber}
+        timeLimit={activity.timeLimit || 180}
+        onComplete={(score, accuracy, timeSpent) => handleGameComplete(activity, classNumber, subjectId, score, accuracy, timeSpent, onComplete)}
+        onClose={onClose}
+      />
+    );
+  }
+
+  if (activity.gameType === 'sciencelab') {
+    return (
+      <ScienceLabGame
+        title={activity.title}
+        classNumber={classNumber}
+        onComplete={(score, accuracy, timeSpent) => handleGameComplete(activity, classNumber, subjectId, score, accuracy, timeSpent, onComplete)}
+        onClose={onClose}
+      />
+    );
+  }
+
+  if (activity.gameType === 'geography') {
+    return (
+      <GeographyExplorerGame
+        title={activity.title}
+        classNumber={classNumber}
+        timeLimit={activity.timeLimit || 180}
+        onComplete={(score, accuracy, timeSpent) => handleGameComplete(activity, classNumber, subjectId, score, accuracy, timeSpent, onComplete)}
         onClose={onClose}
       />
     );
