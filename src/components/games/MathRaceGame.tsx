@@ -116,24 +116,6 @@ export const MathRaceGame: React.FC<MathRaceGameProps> = ({
 
   const currentProblem = gameProblems[currentProblemIndex];
 
-  // Timer
-  useEffect(() => {
-    if (gameState !== 'playing') return;
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          finishGame();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [gameState]);
-
   const startGame = () => {
     soundManager.playClick();
     setGameState('playing');
@@ -157,6 +139,27 @@ export const MathRaceGame: React.FC<MathRaceGameProps> = ({
     
     onComplete(score, accuracy, timeSpent, correctCount);
   }, [score, correctCount, currentProblemIndex, startTime, onComplete]);
+
+  // Timer - use ref to avoid stale closure
+  const finishGameRef = React.useRef(finishGame);
+  finishGameRef.current = finishGame;
+
+  useEffect(() => {
+    if (gameState !== 'playing') return;
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          finishGameRef.current();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [gameState]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

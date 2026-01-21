@@ -59,23 +59,6 @@ export const TrueFalseGame: React.FC<TrueFalseGameProps> = ({
 
   const currentQuestion = gameQuestions[currentQuestionIndex];
 
-  // Timer
-  useEffect(() => {
-    if (gameState !== 'playing') return;
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          handleAnswer(null); // Time out
-          return timePerQuestion;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [gameState, currentQuestionIndex]);
-
   const startGame = () => {
     soundManager.playClick();
     setGameState('playing');
@@ -131,6 +114,26 @@ export const TrueFalseGame: React.FC<TrueFalseGameProps> = ({
       }
     }, 1500);
   }, [currentQuestion, currentQuestionIndex, gameQuestions.length, score, streak, timeLeft, correctCount, startTime, onComplete, timePerQuestion]);
+
+  // Timer - use ref to avoid stale closure
+  const handleAnswerRef = React.useRef(handleAnswer);
+  handleAnswerRef.current = handleAnswer;
+
+  useEffect(() => {
+    if (gameState !== 'playing') return;
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          handleAnswerRef.current(null); // Time out
+          return timePerQuestion;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [gameState, currentQuestionIndex, timePerQuestion]);
 
   // Idle screen
   if (gameState === 'idle') {
