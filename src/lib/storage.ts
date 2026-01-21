@@ -424,6 +424,33 @@ class StorageManager {
     };
   }
 
+  // ============ HELPER METHODS FOR ACHIEVEMENTS ============
+  getTotalXP(): number {
+    return this.getProfile().totalXP;
+  }
+
+  getCompletedActivitiesCount(): number {
+    const progress = this.getProgress();
+    return Object.values(progress.classes)
+      .flatMap(c => Object.values(c.subjects))
+      .reduce((sum, s) => 
+        sum + s.lessonsCompleted.length + s.gamesCompleted.length + 
+        s.quizzesCompleted.length + s.practiceCompleted.length, 0);
+  }
+
+  getSubjectsPlayed(): string[] {
+    const progress = this.getProgress();
+    const subjects = new Set<string>();
+    Object.values(progress.classes).forEach(c => {
+      Object.values(c.subjects).forEach(s => {
+        if (s.gamesCompleted.length > 0 || s.lessonsCompleted.length > 0) {
+          subjects.add(s.subjectId);
+        }
+      });
+    });
+    return Array.from(subjects);
+  }
+
   // ============ RESET ============
   clearAll(): void {
     Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
