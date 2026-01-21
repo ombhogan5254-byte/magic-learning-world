@@ -119,8 +119,9 @@ export const WordBuilderGame: React.FC<WordBuilderGameProps> = ({
           setGameState('completed');
           soundManager.playComplete();
           const timeSpent = (Date.now() - startTime) / 1000;
-          const accuracy = (correctCount + 1) / attempts * 100 || 100;
-          onComplete((correctCount + 1) * 20, accuracy, timeSpent);
+          const totalAttempts = attempts + 1;
+          const accuracy = totalAttempts > 0 ? ((correctCount + 1) / totalAttempts) * 100 : 100;
+          onComplete((correctCount + 1) * 20, Math.min(accuracy, 100), timeSpent);
         }
       }, 1000);
     } else {

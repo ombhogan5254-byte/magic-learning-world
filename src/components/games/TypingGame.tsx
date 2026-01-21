@@ -66,7 +66,8 @@ export const TypingGame: React.FC<TypingGameProps> = ({
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          finishGame();
+          setGameState('completed');
+          soundManager.playComplete();
           return 0;
         }
         if (prev <= 10) soundManager.play('countdown');
@@ -77,17 +78,21 @@ export const TypingGame: React.FC<TypingGameProps> = ({
     return () => clearInterval(timer);
   }, [gameState]);
 
+  // Handle game completion
+  useEffect(() => {
+    if (gameState === 'completed' && timeLeft === 0) {
+      const timeSpent = (Date.now() - startTime) / 1000;
+      const accuracy = totalTypedChars > 0 ? (correctChars / totalTypedChars) * 100 : 0;
+      const wpm = timeSpent > 0 ? Math.round((correctWords / timeSpent) * 60) : 0;
+      const score = correctWords * 10 + Math.round(accuracy);
+      onComplete(score, accuracy, timeSpent, wpm);
+    }
+  }, [gameState, timeLeft, correctWords, totalTypedChars, correctChars, startTime, onComplete]);
+
   const finishGame = useCallback(() => {
     setGameState('completed');
     soundManager.playComplete();
-
-    const timeSpent = (Date.now() - startTime) / 1000;
-    const accuracy = totalTypedChars > 0 ? (correctChars / totalTypedChars) * 100 : 0;
-    const wpm = Math.round((correctWords / timeSpent) * 60);
-    const score = correctWords * 10 + Math.round(accuracy);
-
-    onComplete(score, accuracy, timeSpent, wpm);
-  }, [correctWords, totalTypedChars, correctChars, startTime, onComplete]);
+  }, []);
 
   // Handle typing
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
