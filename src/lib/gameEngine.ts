@@ -47,6 +47,7 @@ export interface Question {
   hint?: string;
   points?: number;
   imageUrl?: string;
+  difficulty?: 1 | 2 | 3 | 4 | 5;
 }
 
 // ============ GAME ENGINE CLASS ============
